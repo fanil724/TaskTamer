@@ -1,0 +1,293 @@
+﻿@using TaskTamer_Application.Contracts
+@model IEnumerable<RequestDTO>
+
+@{
+    ViewData["Title"] = "Список заявок";
+}
+<div class="container-fluid">
+    <div class="row" style="overflow: visible;">
+        <!-- Боковая панель -->
+        <div class="col-md-2  sidebar" style="position: sticky; top: 35px; height: fit-content;">
+            <partial name="NavPanel" />
+        </div>
+        <div class="col-md-10 main-content">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="page-title">
+                        <i class="fas fa-list-alt mr-2"></i> Список заявок
+                    </h1>
+                </div>
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-@TempData["messageType"] alert-dismissible fade show mt-3" role="alert">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <!-- Фильтры и поиск -->
+                <form method="get" asp-action="Index">
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <div class="row row-cols-2">
+                                <div class="col-md-3">
+                                    <h5 class="mb-0">Фильтры и поиск</h5>
+                                </div>
+                                <div class=" col-md-9 d-flex align-items-center justify-content-end gap-3">
+                                    <label class="form-label mb-0">Период </label>
+                                    <select name="period" class="form-select" style="width: auto;">
+                                        <option value="1" selected="@(ViewBag.CurrentPeriod == 1)">За последний месяц</option>
+                                        <option value="6" selected="@(ViewBag.CurrentPeriod == 6)">За полгода</option>
+                                        <option value="12" selected="@(ViewBag.CurrentPeriod == 12)">За год</option>
+                                        <option value="0" selected="@(ViewBag.CurrentPeriod == 0 || ViewBag.CurrentPeriod == null)">Все время</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body row g-3">
+
+                            <div class="col-md-3">
+                                <label class="form-label">Статус</label>
+                                <select name="statusId" class="form-select" asp-items="ViewBag.Statuses">
+                                    <option value="0">Все статусы</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Приоритет</label>
+                                <select name="priority" class="form-select">
+                                    <option value="">Все приоритеты</option>
+                                    <option value="1">Критический</option>
+                                    <option value="2">Высокий</option>
+                                    <option value="3">Средний</option>
+                                    <option value="4">Низкий</option>
+                                    <option value="5">Минимальный</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Исполнитель</label>
+                                <select name="executorId" class="form-select" asp-items="ViewBag.Executors">
+                                    <option value="0">Все исполнители</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Поиск</label>
+                                <div class="input-group">
+                                    <input type="text" name="search" class="form-control" placeholder="Поиск...">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+                <!-- Статистика -->
+                <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
+                    <div class="col">
+                        <div class="card bg-primary text-white h-100 w-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h5 class="card-title">Всего заявок</h5>
+                                <h3 class="card-text">@Model.Count()</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card bg-warning text-white h-100 w-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h5 class="card-title">В работе</h5>
+                                <h3 class="card-text">@Model.Count(r => r.RequestStatus?.Name != "Completed" && r.RequestStatus?.Name != "Завершена")</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card bg-success text-white h-100 w-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h5 class="card-title">Завершено</h5>
+                                <h3 class="card-text">@Model.Count(r => r.RequestStatus?.Name == "Completed" || r.RequestStatus?.Name == "Завершена")</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card bg-danger text-white h-100 w-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h5 class="card-title">Критический приоритет</h5>
+                                <h3 class="card-text">@Model.Count(r => r.Priority == 1)</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Таблица заявок -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Список заявок</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (!Model.Any())
+                        {
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle"></i> Заявки не найдены
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <table class="table table-striped table-hover">
+                                    <thead class="table">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Описание</th>
+                                            <th>Статус</th>
+                                            <th>Приоритет</th>
+                                            <th>Исполнитель</th>
+                                            <th>Создана</th>
+                                            <th>Срок</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.OrderByDescending(r => r.CreationDate))
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <strong>#@item.RequestID</strong>
+                                                </td>
+                                                <td>
+                                                    <div class="text-truncate" style="max-width: 250px;"
+                                                         title="@item.ProblemDescription">
+                                                        @item.ProblemDescription
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge @GetStatusBadgeClass(item.RequestStatus?.Name)">
+                                                        @item.RequestStatus?.Name
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge @GetPriorityBadgeClass(item.Priority)">
+                                                        @GetPriorityText(item.Priority)
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @if (item.Executor != null)
+                                                    {
+                                                        <span>@item.Executor.FullName</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Не назначен</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <small>@item.CreationDate.ToString("dd.MM.yyyy")</small>
+                                                </td>
+                                                <td>
+                                                    @if (item.Deadline.HasValue)
+                                                    {
+                                                        var isOverdue = item.Deadline < DateTime.Now && (item.RequestStatus?.Name != "Completed" && item.RequestStatus?.Name != "Завершена");
+                                                        <small class="@(isOverdue ? "text-danger" : "text-muted")">
+                                                            @item.Deadline.Value.ToString("dd.MM.yyyy")
+                                                            @if (isOverdue)
+                                                            {
+                                                                <i class="fas fa-exclamation-triangle"
+                                                                   title="Просрочено"></i>
+                                                            }
+                                                        </small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a asp-action="Details" asp-route-id="@item.RequestID"
+                                                           class="btn btn-info" title="Просмотр">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a asp-action="Edit" asp-route-id="@item.RequestID"
+                                                           class="btn btn-warning" title="Редактировать">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Новая" => "bg-secondary",
+            "В работе" => "bg-warning",
+            "Завершено" => "bg-success",
+            "Отменено" => "bg-danger",
+            _ => "bg-info"
+        };
+    }
+
+    private string GetPriorityBadgeClass(int priority)
+    {
+        return priority switch
+        {
+            1 => "bg-danger",
+            2 => "bg-warning",
+            3 => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetPriorityText(int priority)
+    {
+        return priority switch
+        {
+            1 => "Критический",
+            2 => "Высокий",
+            3 => "Средний",
+            4 => "Низкий",
+            5 => "Минимальный",
+            _ => "Не указан"
+        };
+    }
+
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Автозакрытие алертов
+            setTimeout(function () {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // Подсказки
+            $('[title]').tooltip();
+
+            // Сохранение состояния фильтров
+            $('select, input').on('change', function () {
+                localStorage.setItem('filters', $('form').serialize());
+            });
+
+            // Восстановление фильтров
+            var savedFilters = localStorage.getItem('filters');
+            if (savedFilters) {
+                $('form').deserialize(savedFilters);
+            }
+        });
+
+
+    </script>
+}

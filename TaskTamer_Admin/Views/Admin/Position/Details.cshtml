@@ -1,0 +1,45 @@
+﻿@using TaskTamer_Application.Contracts
+@model PositionDTO
+
+<h2>Информация о должности</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">ID должности:</dt>
+    <dd class="col-sm-9">@Model.PositionID</dd>
+
+    <dt class="col-sm-3">Название:</dt>
+    <dd class="col-sm-9">@Model.Title</dd>
+
+    <dt class="col-sm-3">Описание:</dt>
+    <dd class="col-sm-9">@(Model.Description ?? "Не указано")</dd>
+
+    <dt class="col-sm-3">Уровень доступа:</dt>
+    <dd class="col-sm-9">
+        <span class="badge bg-info">@Model.AccessLevel - @GetAccessLevelName(Model.AccessLevel)</span>
+    </dd>
+</dl>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.PositionID" class="btn btn-warning">Редактировать</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад к списку</a>
+</div>
+
+@functions {
+    private string GetAccessLevelName(int level)
+    {
+        return level switch
+        {
+            1 => "Базовый",
+            2 => "Пользователь",
+            3 => "Оператор",
+            4 => "Контролер",
+            5 => "Специалист",
+            6 => "Менеджер",
+            7 => "Руководитель",
+            8 => "Администратор",
+            9 => "Супервайзер",
+            10 => "Системный администратор",
+            _ => "Неизвестный"
+        };
+    }
+}

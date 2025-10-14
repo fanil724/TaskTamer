@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TaskTamer_Logic\TaskTamer_Logic.csproj" />
+      <ProjectReference Include="..\TaskTamer_Persistence\TaskTamer_Persistence.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Lib.AspNetCore.ServerSentEvents" Version="9.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.8" />
+      <PackageReference Include="NLog" Version="6.0.3" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.1" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,621 @@
+
+.erm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: erm-fadeIn 0.3s ease-out;
+}
+
+.erm-modal-content {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  padding: 0;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: erm-slideUp 0.3s ease-out;
+  transform-origin: center;
+}
+
+.erm-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 32px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px 16px 0 0;
+}
+
+.erm-modal-header h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.erm-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: white;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.erm-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.erm-request-form {
+  padding: 32px;
+}
+
+.erm-form-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.erm-form-row .erm-form-group {
+  flex: 1;
+}
+
+.erm-form-group {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.erm-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.erm-form-group:focus-within label {
+  color: #667eea;
+}
+
+.erm-form-group input[type="text"],
+.erm-form-group input[type="datetime-local"],
+.erm-form-group select,
+.erm-form-group textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.erm-form-group input:focus,
+.erm-form-group select:focus,
+.erm-form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 
+    0 0 0 3px rgba(102, 126, 234, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.erm-form-group input.erm-error,
+.erm-form-group select.erm-error,
+.erm-form-group textarea.erm-error {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.erm-error-text {
+  color: #e53e3e;
+  font-size: 13px;
+  margin-top: 6px;
+  display: block;
+  font-weight: 500;
+}
+
+.erm-loading-text {
+  color: #4a5568;
+  font-size: 13px;
+  margin-top: 6px;
+  display: block;
+  font-style: italic;
+}
+
+.erm-documentation-link {
+  margin-top: 8px;
+}
+
+.erm-download-button {
+  background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+  border: 2px solid #cbd5e0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.erm-download-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.erm-download-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.erm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.erm-btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.erm-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.erm-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.erm-btn-secondary {
+  background: #f7fafc;
+  color: #4a5568;
+  border: 2px solid #e2e8f0;
+}
+
+.erm-btn-secondary:hover:not(:disabled) {
+  background: #edf2f7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.erm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+@keyframes erm-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes erm-slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .erm-modal-content {
+    width: 95%;
+    max-width: none;
+    margin: 20px;
+    border-radius: 12px;
+  }
+  
+  .erm-modal-header {
+    padding: 20px;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .erm-request-form {
+    padding: 20px;
+  }
+  
+  .erm-form-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .erm-modal-actions {
+    flex-direction: column;
+  }
+  
+  .erm-btn {
+    width: 100%;
+  }
+}
+
+.erm-modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.erm-modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 0 16px 16px 0;
+}
+
+.erm-modal-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+}
+
+.erm-modal-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+.erm-btn-primary::before {
+  content: '💾';
+}
+
+.erm-btn-secondary::before {
+  content: '✕';
+}
+
+/* EditRequestModal.css */
+.erm-tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 20px;
+}
+
+.erm-tab {
+    padding: 12px 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.erm-tab:hover {
+    color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.erm-tab-active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.erm-history-tab {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.erm-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.erm-history-item {
+    padding: 16px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.erm-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.erm-history-date {
+    color: #6c757d;
+    font-size: 12px;
+}
+
+.erm-history-status {
+    padding: 4px 8px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.erm-history-user {
+    margin-bottom: 8px;
+    color: #495057;
+    font-size: 14px;
+}
+
+.erm-history-comment {
+    padding: 12px;
+    background-color: white;
+    border-left: 3px solid #007bff;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #495057;
+}
+
+.erm-no-history {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+.erm-history-add {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.erm-history-add textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.erm-btn-outline {
+    background: transparent;
+    border: 1px solid #007bff;
+    color: #007bff;
+    padding: 8px 16px;
+    align-self: flex-start;
+}
+
+.erm-btn-outline:hover:not(:disabled) {
+    background: #007bff;
+    color: white;
+}
+
+.erm-btn-outline:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+.erm-info-text {
+    color: #4299e1;
+    font-size: 13px;
+    margin-top: 6px;
+    display: block;
+    font-weight: 500;
+}
+
+.erm-user-permissions-info {
+    background: linear-gradient(135deg, #f0fff4 0%, #e6fffa 100%);
+    border: 1px solid #68d391;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.erm-user-permissions-info h4 {
+    margin: 0 0 12px 0;
+    color: #2d3748;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.erm-user-permissions-info ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #4a5568;
+}
+
+.erm-user-permissions-info li {
+    margin-bottom: 6px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+
+/* Стили для текущего статуса */
+.erm-current-status {
+    margin-bottom: 12px;
+}
+
+.erm-status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 120px;
+}
+
+.erm-status-создана {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #1976d2;
+}
+
+.erm-status-назначена {
+    background-color: #fff3e0;
+    color: #f57c00;
+    border: 1px solid #f57c00;
+}
+
+.erm-status-в-работе {
+    background-color: #fff8e1;
+    color: #ffa000;
+    border: 1px solid #ffa000;
+}
+
+.erm-status-ожидает-проверки {
+    background-color: #e8f5e8;
+    color: #388e3c;
+    border: 1px solid #388e3c;
+}
+
+.erm-status-завершена {
+    background-color: #f5f5f5;
+    color: #616161;
+    border: 1px solid #616161;
+}
+
+.erm-status-отменена {
+    background-color: #ffebee;
+    color: #d32f2f;
+    border: 1px solid #d32f2f;
+}
+
+.erm-status-приостановлена {
+    background-color: #fce4ec;
+    color: #c2185b;
+    border: 1px solid #c2185b;
+}
+
+.erm-status-переоткрыта {
+    background-color: #e8eaf6;
+    color: #303f9f;
+    border: 1px solid #303f9f;
+}
+
+/* Стили для кнопки следующего шага */
+.erm-next-step {
+    margin-top: 12px;
+}
+
+.erm-next-step-btn {
+    width: 100%;
+    padding: 10px 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.erm-next-step-btn:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.erm-next-step-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.erm-next-step-info {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+}
+
+/* Стили для модального окна подтверждения */
+.erm-confirmation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.erm-confirmation-modal {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.erm-confirmation-header {
+    margin-bottom: 16px;
+}
+
+.erm-confirmation-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.erm-confirmation-body {
+    margin-bottom: 24px;
+}
+
+.erm-confirmation-body p {
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.erm-confirmation-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}

@@ -1,0 +1,38 @@
+﻿@using TaskTamer_Application.Contracts
+@model DepartmentDTO
+
+<h2>Информация об отделе</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">ID отдела:</dt>
+    <dd class="col-sm-9">@Model.DepartmentID</dd>
+
+    <dt class="col-sm-3">Название:</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+
+    <dt class="col-sm-3">Описание:</dt>
+    <dd class="col-sm-9">@(Model.Description ?? "Не указано")</dd>
+
+    <dt class="col-sm-3">Тип отдела:</dt>
+    <dd class="col-sm-9">@Model.DepartmentType</dd>
+
+    <dt class="col-sm-3">Дата создания:</dt>
+    <dd class="col-sm-9">@Model.CreationDate.ToString("dd.MM.yyyy HH:mm")</dd>
+
+    <dt class="col-sm-3">Статус:</dt>
+    <dd class="col-sm-9">
+        @if (Model.IsActive)
+        {
+            <span class="badge bg-success">Активный</span>
+        }
+        else
+        {
+            <span class="badge bg-danger">Неактивный</span>
+        }
+    </dd>
+</dl>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.DepartmentID" class="btn btn-warning">Редактировать</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад к списку</a>
+</div>

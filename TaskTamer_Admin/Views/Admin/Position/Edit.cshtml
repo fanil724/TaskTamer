@@ -1,0 +1,59 @@
+﻿@using TaskTamer_Application.Contracts
+@model PositionDTO
+
+<h2>Редактирование должности</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="PositionID" />
+
+    <div class="form-group">
+        <label asp-for="Title" class="control-label">Название должности *</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description" class="control-label">Описание</label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="AccessLevel" class="control-label">Уровень доступа</label>
+        <select asp-for="AccessLevel" class="form-control">
+            @for (int i = 1; i <= 10; i++)
+            {
+                <option value="@i">@i - @GetAccessLevelName(i)</option>
+            }
+        </select>
+        <small class="form-text text-muted">
+            Текущий уровень: @Model.AccessLevel - @GetAccessLevelName(Model.AccessLevel)
+        </small>
+        <span asp-validation-for="AccessLevel" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+
+@functions {
+    private string GetAccessLevelName(int level)
+    {
+        return level switch
+        {
+            1 => "Базовый",
+            2 => "Пользователь",
+            3 => "Оператор",
+            4 => "Контролер",
+            5 => "Специалист",
+            6 => "Менеджер",
+            7 => "Руководитель",
+            8 => "Администратор",
+            9 => "Супервайзер",
+            10 => "Системный администратор",
+            _ => "Неизвестный"
+        };
+    }
+}

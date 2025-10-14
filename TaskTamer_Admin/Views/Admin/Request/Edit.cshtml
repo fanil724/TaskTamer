@@ -1,0 +1,270 @@
+﻿@using TaskTamer_Application.Contracts
+@model RequestDTO
+
+@{
+    ViewData["Title"] = "Редактирование заявки #" + @Model.RequestID;
+}
+
+<div class="container mt-4">
+    <h2>Редактирование заявки #@Model.RequestID</h2>
+    <hr />
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-@TempData["messageType"] alert-dismissible fade show mt-3" role="alert">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <h5>Ошибки валидации:</h5>
+            <ul>
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <form asp-action="Edit" asp-route-id="@Model.RequestID" method="post" class="needs-validation" novalidate>
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="RequestID" />
+        <input type="hidden" asp-for="CreationDate" />
+        <input type="hidden" asp-for="Author.EmployeeID" />
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        Основная информация
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="control-label">Номер заявки</label>
+                            <input class="form-control" value="@Model.RequestID" disabled />
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ProblemDescription" class="control-label">Описание проблемы *</label>
+                            <textarea asp-for="ProblemDescription" class="form-control" rows="4" required></textarea>
+                            <span asp-validation-for="ProblemDescription" class="text-danger"></span>
+
+                            @if (ViewData.ModelState.ContainsKey("ProblemDescription") && ViewData.ModelState["ProblemDescription"].Errors.Any())
+                            {
+                                <span class="text-danger">@ViewData.ModelState["ProblemDescription"].Errors.First().ErrorMessage</span>
+                            }
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Priority" class="control-label">Приоритет *</label>
+                            <select asp-for="Priority" class="form-control" required>
+                                <option value="">-- Выберите приоритет --</option>
+                                <option value="1" selected="@(Model.Priority == 1)">Критический (1)</option>
+                                <option value="2" selected="@(Model.Priority == 2)">Высокий (2)</option>
+                                <option value="3" selected="@(Model.Priority == 3)">Средний (3)</option>
+                                <option value="4" selected="@(Model.Priority == 4)">Низкий (4)</option>
+                                <option value="5" selected="@(Model.Priority == 5)">Минимальный (5)</option>
+                            </select>
+                            <span asp-validation-for="Priority" class="text-danger"></span>
+                            @if (ViewData.ModelState.ContainsKey("Priority") && ViewData.ModelState["Priority"].Errors.Any())
+                            {
+                                <span class="text-danger">@ViewData.ModelState["Priority"].Errors.First().ErrorMessage</span>
+                            }
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="RequestStatus.StatusID" class="control-label">Статус *</label>
+                            <select asp-for="RequestStatus.StatusID" class="form-control" required
+                                    asp-items="@(ViewBag.Statuses as SelectList ?? new SelectList(new List<SelectListItem>()))">
+                                <option value="">-- Выберите статус --</option>
+                            </select>
+                            <span asp-validation-for="RequestStatus.StatusID" class="text-danger"></span>
+                            @if (ViewData.ModelState.ContainsKey("RequestStatus.StatusID") && ViewData.ModelState["RequestStatus.StatusID"].Errors.Any())
+                            {
+                                <span class="text-danger">@ViewData.ModelState["RequestStatus.StatusID"].Errors.First().ErrorMessage</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        Оборудование
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label asp-for="Equipment.EquipmentID" class="control-label">Оборудование *</label>
+                            <select asp-for="Equipment.EquipmentID" class="form-control" required id="equipmentSelect">
+                                <option value="0">-- Выберите оборудование --</option>
+                                @if (ViewBag.Equipment != null)
+                                {
+                                    foreach (var item in ViewBag.Equipment)
+                                    {
+                                        <option value="@item.Value"
+                                                data-department="@item.DescriptionField"
+                                                data-location="@item.DescriptionField2">
+                                            @item.Text
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="Equipment.EquipmentID" class="text-danger"></span>
+                            @if (ViewData.ModelState.ContainsKey("Equipment.EquipmentID") && ViewData.ModelState["Equipment.EquipmentID"].Errors.Any())
+                            {
+                                <span class="text-danger">@ViewData.ModelState["Equipment.EquipmentID"].Errors.First().ErrorMessage</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая колонка -->
+            <div class="col-md-6">
+                <!-- Тип заявки -->
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        Тип заявки
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label asp-for="RequestType.RequestTypeID" class="control-label">Тип заявки *</label>
+                            <select asp-for="RequestType.RequestTypeID" class="form-control" required
+                                    asp-items="@(ViewBag.Types as SelectList ?? new SelectList(new List<SelectListItem>()))">
+                                <option value="">-- Выберите тип --</option>
+                            </select>
+                            <span asp-validation-for="RequestType.RequestTypeID" class="text-danger"></span>
+                            @if (ViewData.ModelState.ContainsKey("RequestType.RequestTypeID") && ViewData.ModelState["RequestType.RequestTypeID"].Errors.Any())
+                            {
+                                <span class="text-danger">@ViewData.ModelState["RequestType.RequestTypeID"].Errors.First().ErrorMessage</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-header bg-warning text-white">
+                        Сроки выполнения
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label asp-for="Deadline" class="control-label">Желаемый срок выполнения</label>
+                            <input asp-for="Deadline" type="datetime-local" class="form-control" />
+                            <span asp-validation-for="Deadline" class="text-danger"></span>
+                            @if (ViewData.ModelState.ContainsKey("Deadline") && ViewData.ModelState["Deadline"].Errors.Any())
+                            {
+                                <span class="text-danger">@ViewData.ModelState["Deadline"].Errors.First().ErrorMessage</span>
+                            }
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Executor.EmployeeID" class="control-label">Исполнитель</label>
+                            <select asp-for="Executor.EmployeeID" class="form-control" id="employeeSelect">
+                                <option value="0">-- Выберите исполнителя --</option>
+                                @if (ViewBag.Executors != null)
+                                {
+                                    foreach (var item in ViewBag.Executors)
+                                    {
+                                        <option value="@item.Value"
+                                                data-department="@item.DescriptionField"
+                                                data-position="@item.DescriptionField2">
+                                            @item.Text
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="Executor.EmployeeID" class="text-danger"></span>
+                            @if (ViewData.ModelState.ContainsKey("Executor.EmployeeID") && ViewData.ModelState["Executor.EmployeeID"].Errors.Any())
+                            {
+                                <span class="text-danger">@ViewData.ModelState["Executor.EmployeeID"].Errors.First().ErrorMessage</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="card mb-3">
+                    <div class="card-header bg-secondary text-white">
+                        Дополнительная информация
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="control-label">Дата создания</label>
+                            <input class="form-control" value="@Model.CreationDate.ToString("dd.MM.yyyy HH:mm")"
+                                   disabled />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Автор</label>
+                            <input class="form-control" value="@Model.Author?.FullName" disabled />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Дата последнего изменения</label>
+                            <input class="form-control" value="@DateTime.Now.ToString("dd.MM.yyyy HH:mm")" disabled />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mt-4 mb-5">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Сохранить изменения
+            </button>
+            <a asp-action="Details" asp-route-id="@Model.RequestID" class="btn btn-info">
+                <i class="fas fa-eye"></i> Просмотр
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад к списку
+            </a>
+        </div>
+    </form>
+</div>
+
+
+<script>
+              var eq = document.getElementById('equipmentSelect');
+            filt(eq);
+            eq.addEventListener('change',function() {
+            filt(this);
+                var employeeSelect = document.getElementById('employeeSelect');
+                employeeSelect.value = "0";
+            });
+
+        function  filt(equip) {
+              var selectedOption = equip.options[equip.selectedIndex];
+              var dep = selectedOption.getAttribute('data-department');
+
+              var employeeSelect = document.getElementById('employeeSelect');
+              var employees = employeeSelect.querySelectorAll('option');
+
+              employees.forEach(function(employee) {
+                  if (employee.value !== "" && employee.value !== "0") {
+                      var employeeDep = employee.getAttribute('data-department');
+                      if (employeeDep === dep) {
+                          employee.hidden = false;
+                      } else {
+                          employee.hidden = true;
+                      }
+                  }
+              });
+
+          }
+
+
+
+
+
+</script>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

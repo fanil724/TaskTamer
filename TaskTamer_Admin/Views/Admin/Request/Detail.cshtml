@@ -1,0 +1,188 @@
+﻿@using TaskTamer_Application.Contracts
+@model RequestDTO
+
+@{
+    ViewData["Title"] = "Просмотр заявки #" + Model.RequestID;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Заявка #@Model.RequestID</h2>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.RequestID" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Редактировать
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Левая колонка -->
+        <div class="col-md-6">
+            <!-- Основная информация -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Основная информация</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Номер заявки:</dt>
+                        <dd class="col-sm-8">@Model.RequestID</dd>
+
+                        <dt class="col-sm-4">Описание проблемы:</dt>
+                        <dd class="col-sm-8">@Model.ProblemDescription</dd>
+
+                        <dt class="col-sm-4">Приоритет:</dt>
+                        <dd class="col-sm-8">
+                            @switch (Model.Priority)
+                            {
+                                case 1:
+                                    <span class="badge bg-danger">Высокий (1)</span>
+                                    ; break;
+                                case 2:
+
+                                    <span class="badge bg-warning">Средний (2)</span>
+                                    ; break;
+                                case 3:
+
+                                    <span class="badge bg-success">Низкий (3)</span>
+                                    ; break;
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Статус:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-info">@Model.RequestStatus?.Name</span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Оборудование -->
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Оборудование</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Оборудование:</dt>
+                        <dd class="col-sm-8">@Model.Equipment?.Name</dd>
+
+                        <dt class="col-sm-4">Инвентарный номер:</dt>
+                        <dd class="col-sm-8">@Model.Equipment?.SerialNumber</dd>
+
+                        <dt class="col-sm-4">Местоположение:</dt>
+                        <dd class="col-sm-8">@Model.Equipment?.Location</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка -->
+        <div class="col-md-6">
+            <!-- Тип заявки -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Тип заявки</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Тип заявки:</dt>
+                        <dd class="col-sm-8">@Model.RequestType?.Name</dd>
+
+                        <dt class="col-sm-4">Категория:</dt>
+                        <dd class="col-sm-8">@Model.RequestType?.Description</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Сроки и исполнитель -->
+            <div class="card mb-3">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">Сроки выполнения</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Срок выполнения:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Deadline.HasValue)
+                            {
+                                @Model.Deadline.Value.ToString("dd.MM.yyyy HH:mm")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Не указан</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Исполнитель:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Executor != null)
+                            {
+                                @Model.Executor.FullName
+                            }
+                            else
+                            {
+                                <span class="text-muted">Не назначен</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Дополнительная информация -->
+            <div class="card mb-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Дополнительная информация</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Дата создания:</dt>
+                        <dd class="col-sm-8">@Model.CreationDate.ToString("dd.MM.yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-4">Автор:</dt>
+                        <dd class="col-sm-8">@Model.Author?.FullName</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- История изменений (если есть) -->
+    @if (Model.History != null && Model.History.Any())
+    {
+        <div class="card mt-3 mb-5">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">История изменений</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Действие</th>
+                                <th>Пользователь</th>
+                                <th>Комментарий</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var history in Model.History.OrderByDescending(h => h.ChangeDate))
+                            {
+                                <tr>
+                                    <td>@history.ChangeDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>@history.Status.Description</td>
+                                    <td>@history.ChangedBy?.FullName</td>
+                                    <td>@history.Comment</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+

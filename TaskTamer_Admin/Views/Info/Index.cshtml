@@ -1,0 +1,83 @@
+﻿@model List<IdentityUser>
+@using Microsoft.AspNetCore.Identity
+
+
+
+<div class="container mt-4">
+    <h2 class="mb-4">
+        <i class="bi bi-shield-lock"></i> Администраторы системы
+    </h2>
+    
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Для получения прав доступа обратитесь к любому из администраторов системы.
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <i class="bi bi-people-fill"></i> Список администраторов
+        </div>
+        
+        <div class="card-body">
+            @if (Model!=null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th><i class="bi bi-person-badge"></i> Имя</th>
+                                <th><i class="bi bi-envelope"></i> Email</th>
+                                <th><i class="bi bi-telephone"></i> Контакты</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var admin in Model)
+                            {
+                                <tr>
+                                    <td>@admin.UserName</td>
+                                    <td>
+                                        <a href="mailto:@admin.Email" class="text-decoration-none">
+                                            @admin.Email
+                                        </a>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(admin.PhoneNumber))
+                                        {
+                                            <a href="tel:@admin.PhoneNumber" class="text-decoration-none">
+                                                @admin.PhoneNumber
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Не указан</span>
+                                        }
+                                    </td>
+                                   
+                                </tr>
+                                
+                                
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> В системе нет зарегистрированных администраторов.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+        .card {
+            border-radius: 0.5rem;
+        }
+    </style>
+
+

@@ -1,0 +1,147 @@
+﻿@using TaskTamer_Application.Contracts
+@model EquipmentDTO
+
+@{
+    ViewData["Title"] = "Оборудование #" + Model.EquipmentID;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Оборудование: @Model.Name</h2>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.EquipmentID" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Редактировать
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Основная информация -->
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Основная информация</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">ID:</dt>
+                        <dd class="col-sm-8">#@Model.EquipmentID</dd>
+
+                        <dt class="col-sm-4">Название:</dt>
+                        <dd class="col-sm-8">@Model.Name</dd>
+
+                        <dt class="col-sm-4">Модель:</dt>
+                        <dd class="col-sm-8">@Model.Model</dd>
+
+                        <dt class="col-sm-4">Серийный номер:</dt>
+                        <dd class="col-sm-8"><code>@Model.SerialNumber</code></dd>
+
+                        <dt class="col-sm-4">Тип:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge @GetTypeBadgeClass(Model.Type)">
+                                @Model.Type
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4">Производитель:</dt>
+                        <dd class="col-sm-8">@Model.Manufacturer</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Дополнительная информация -->
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Расположение и ответственные</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Местоположение:</dt>
+                        <dd class="col-sm-8">@Model.Location</dd>
+
+                        <dt class="col-sm-4">Отдел:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.departmentDTO != null)
+                            {
+                                @Model.departmentDTO.Name
+                            }
+                            else
+                            {
+                                <span class="text-muted">Не указан</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Ответственный:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.ResponsibleEmployee != null)
+                            {
+                                @Model.ResponsibleEmployee.FullName
+                            }
+                            else
+                            {
+                                <span class="text-muted">Не назначен</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Дата покупки:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.PurchaseDate.HasValue)
+                            {
+                                @Model.PurchaseDate.Value.ToString("dd.MM.yyyy")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Не указана</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Документация -->
+            <div class="card mb-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Документация</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Тех. документация:</dt>
+                        <dd class="col-sm-8">
+                            @if (!string.IsNullOrEmpty(Model.TechnicalDocumentation))
+                            {                               
+                                <a href="@Url.Action("DownloadDocumentation", "Equipment", new { equipmentId = Model.EquipmentID })"
+                                   class="btn btn-primary">
+                                    <i class="fas fa-download"></i> Скачать документацию
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Отсутствует</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetTypeBadgeClass(string type)
+    {
+        return type switch
+        {
+            "Компьютер" => "bg-primary",
+            "Принтер" => "bg-success",
+            "Сервер" => "bg-warning",
+            "Сетевое" => "bg-info",
+            "Офисное" => "bg-secondary",
+            _ => "bg-dark"
+        };
+    }
+}

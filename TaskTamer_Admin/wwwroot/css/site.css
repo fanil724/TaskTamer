@@ -1,0 +1,119 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+
+.sidebar {
+    background-color: #f8f9fa;
+    padding: 20px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+}
+
+.main-content {
+    padding: 30px;
+    background-color: #fff;
+}
+
+.page-title {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1.8rem;
+}
+
+.table {
+    font-size: 0.95rem;
+}
+
+    .table th {
+        border-top: none;
+        background-color: #f8fafc;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+    .btn-icon:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+.font-weight-semibold {
+    font-weight: 500;
+}
+
+.badge-pill {
+    padding: 0.5em 1em;
+    font-size: 0.8em;
+}
+
+.toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 15px;
+    border-radius: 5px;
+    color: white;
+    z-index: 1000;
+    transition: opacity 0.5s;
+}
+
+.toast-success {
+    background-color: #28a745;
+}
+
+.toast-error {
+    background-color: #dc3545;
+}
+
+.toast-info {
+    background-color: #17a2b8;
+}
+
+.toast-warning {
+    background-color: #ffc107;
+}
+
+.fade-out {
+    opacity: 0;
+}

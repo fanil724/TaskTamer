@@ -1,0 +1,71 @@
+﻿@using TaskTamer_Application.Contracts
+@model IEnumerable<PositionDTO>
+
+@{
+    ViewData["Title"] = "Страница департаментов";
+}
+
+
+
+<div class="row">
+    <div class="row" style="overflow: visible;">
+        <!-- Боковая панель -->
+        <div class="col-md-2  sidebar" style="position: sticky; top: 35px; height: fit-content;">
+            <partial name="NavPanel" />
+        </div>
+        <div class="col-md-10 main-content">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="page-title">
+                        <i class="fas fa-suitcase mr-2"></i> Список должностей
+                    </h1>
+                    <p>
+                        <a asp-action="Create" class="btn btn-success"> Создать новую должность</a>
+                    </p>
+                </div>
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-@TempData["messageType"] alert-dismissible fade show mt-3" role="alert">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Название</th>
+                            <th>Описание</th>
+                            <th>Уровень доступа</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.PositionID</td>
+                                <td>@item.Title</td>
+                                <td>@(item.Description?.Length > 50 ? item.Description.Substring(0, 50) + "..." : item.Description)</td>
+                                <td>
+                                    <span class="badge bg-info">@item.AccessLevel</span>
+                                </td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.PositionID"
+                                       class="btn btn-info" title="Просмотр">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.PositionID"
+                                       class="btn btn-warning" title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </a>                                   
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

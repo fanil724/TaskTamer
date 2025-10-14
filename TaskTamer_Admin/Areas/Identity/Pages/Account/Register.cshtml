@@ -1,0 +1,109 @@
+﻿@page
+@model RegisterModel
+
+
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white py-4">
+                    <h2 class="text-center mb-0"><i class="bi bi-person-plus me-2"></i> Create Your Account</h2>
+                </div>
+                <div class="card-body p-5">
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+                        <!-- Email Field -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Email" class="form-label fw-bold">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-envelope text-primary"></i>
+                                </span>
+                                <input asp-for="Input.Email" class="form-control form-control-lg" 
+                                       autocomplete="username" placeholder="example@domain.com" />
+                            </div>
+                            <span asp-validation-for="Input.Email" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Password" class="form-label fw-bold">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-lock text-primary"></i>
+                                </span>
+                                <input asp-for="Input.Password" class="form-control form-control-lg" 
+                                       autocomplete="new-password" placeholder="••••••••" 
+                                       id="passwordField" />
+                                <button class="btn btn-outline-secondary toggle-password" 
+                                        type="button" data-target="passwordField">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Minimum 8 characters</div>
+                            <span asp-validation-for="Input.Password" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="mb-4">
+                            <label asp-for="Input.ConfirmPassword" class="form-label fw-bold">Confirm Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-lock-fill text-primary"></i>
+                                </span>
+                                <input asp-for="Input.ConfirmPassword" class="form-control form-control-lg" 
+                                       autocomplete="new-password" placeholder="••••••••" 
+                                       id="confirmPasswordField" />
+                                <button class="btn btn-outline-secondary toggle-password" 
+                                        type="button" data-target="confirmPasswordField">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger small mt-1 d-block"></span>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid mt-4">
+                            <button id="registerSubmit" type="submit" 
+                                    class="btn btn-primary btn-lg rounded-pill py-3 fw-bold">
+                                <i class="bi bi-person-check me-2"></i> Register Now
+                            </button>
+                        </div>
+
+                        <!-- Login Link -->
+                        <div class="text-center mt-4 pt-3 border-top">
+                            <p class="mb-0">Already have an account? 
+                                <a asp-page="./Login" class="text-decoration-none fw-bold">Sign In</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                const icon = this.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            });
+        });
+    </script>
+}

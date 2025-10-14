@@ -1,0 +1,196 @@
+.request-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 13px;
+}
+
+.request-row:hover {
+    background-color: #f8f9fa;
+}
+.request-row.highlighted {
+    background-color: #fff9e6;
+    border-left: 4px solid #ffc107;
+    animation: highlight-pulse 2s ease-in-out;
+}
+
+.request-row.highlighted:hover {
+    background-color: #fff1cc;
+}
+
+@keyframes highlight-pulse {
+    0% { background-color: #fff9e6; }
+    50% { background-color: #ffeeba; }
+    100% { background-color: #fff9e6; }
+}
+
+.row-main {
+    display: grid;
+    grid-template-columns: 80px 120px 1fr 100px 140px 100px 120px;     
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+}
+
+.row-id-priority {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.priority-icon {
+    font-size: 12px;
+}
+
+.request-id {
+    font-weight: 600;
+    color: #666;
+    font-size: 12px;
+}
+
+.row-equipment {
+    font-weight: 500;
+}
+
+.equipment-name {
+    color: #333;
+}
+
+.row-problem {
+    min-width: 0;
+}
+
+.problem-text {
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.row-author,
+.row-executor {
+    text-align: center;
+}
+
+.author {
+    background: #f0f8ff;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    color: #1976d2;
+}
+
+.executor {
+    background: #fff3e0;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    color: #f57c00;
+}
+
+.row-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 11px;
+}
+
+.creation-date {
+    color: #28a745;
+}
+
+.deadline {
+    color: #dc3545;
+}
+
+.row-status {
+    text-align: center;
+}
+
+.status {
+    padding: 0px 0px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-new {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-in-progress {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.status-completed {
+    background: #e8f5e8;
+    color: #388e3c;
+}
+
+.status-rejected {
+    background: #ffebee;
+    color: #d32f2f;
+}
+
+.status-unknown {
+    background: #f5f5f5;
+    color: #9e9e9e;
+}
+
+@media (max-width: 1200px) {
+    .row-main {
+        grid-template-columns: 70px 100px 1fr 80px 80px 120px 90px;
+        gap: 8px;
+    }
+    
+    .problem-text {
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .request-row {
+        padding: 6px 8px;
+    }
+    
+    .row-main {
+        grid-template-columns: 60px 80px 1fr 70px 70px;
+        grid-template-areas: 
+            "id-priority equipment status author executor"
+            "problem problem dates dates dates";
+        gap: 6px;
+    }
+    
+    .row-id-priority { grid-area: id-priority; }
+    .row-equipment { grid-area: equipment; }
+    .row-problem { grid-area: problem; }
+    .row-author { grid-area: author; }
+    .row-executor { grid-area: executor; }
+    .row-dates { grid-area: dates; }
+    .row-status { grid-area: status; }
+    
+    .row-dates {
+        flex-direction: row;
+        gap: 8px;
+        justify-content: flex-start;
+    }
+    
+    .problem-text {
+        max-width: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .author,
+    .executor {
+        font-size: 10px;
+        padding: 1px 6px;
+    }
+}

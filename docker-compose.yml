@@ -1,0 +1,64 @@
+version: '3.8'
+services:
+  # SQL Server
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql-server
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Password123  
+      - MSSQL_PID=Developer
+      - MSSQL_USER=app_user
+      - MSSQL_PASSWORD=AppUserPassword123!
+      - MSSQL_DATABASE=EquipmentManagementSystem
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - app-network
+
+  # TaskTamer API
+  tasktamer-api:
+    build:
+      context: .
+      dockerfile: TaskTamer/Dockerfile
+    container_name: tasktamer-api
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__AppDbContext=Server=mssql;Database=EquipmentManagementSystem;User Id=app_user;Password=AppUserPassword123!;TrustServerCertificate=True;
+      - ConnectionStrings__AdminContext=Server=mssql;Database=EquipmentManagementSystem;User Id=app_user;Password=AppUserPassword123!;TrustServerCertificate=True;MultipleActiveResultSets=true;
+    depends_on:
+      - mssql
+    networks:
+      - app-network
+    volumes:
+      - ./uploads 
+
+  # TaskTamer Admin
+  tasktamer-admin:
+    build:
+      context: .
+      dockerfile: TaskTamer_Admin/Dockerfile
+    container_name: tasktamer-admin
+    ports:
+      - "8082:8082"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__AppDbContext=Server=mssql;Database=EquipmentManagementSystem;User Id=app_user;Password=AppUserPassword123!;TrustServerCertificate=True;
+    depends_on:
+      - mssql
+    networks:
+      - app-network
+    volumes:
+      - ./uploads 
+
+volumes:
+  mssql_data:
+
+networks:
+  app-network:
+    driver: bridge

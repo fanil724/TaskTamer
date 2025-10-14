@@ -1,0 +1,450 @@
+﻿@using TaskTamer_Application.Contracts;
+@model IEnumerable<RequestDTO>
+@{
+    ViewData["Title"] = "Список заявок";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Статистика заявок</h2>
+</div>
+<div id="container" style="border:1px solid #ccc;
+                           height:370px;padding:5px">
+    <canvas id="chart"
+            height="360"></canvas>
+</div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Список заявок</h2>
+</div>
+<form method="get" asp-action="Index">
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <div class="row row-cols-2">
+                <div class="col-md-3">
+                    <h5 class="mb-0">Фильтры и поиск</h5>
+                </div>
+                <div class=" col-md-9 d-flex align-items-center justify-content-end gap-3">
+                    <label class="form-label mb-0">Период </label>
+                    <select name="period" class="form-select" style="width: auto;">
+                        <option value="1" selected="@(ViewBag.CurrentPeriod == 1)">За последний месяц</option>
+                        <option value="6" selected="@(ViewBag.CurrentPeriod == 6)">За полгода</option>
+                        <option value="12" selected="@(ViewBag.CurrentPeriod == 12)">За год</option>
+                        <option value="0" selected="@(ViewBag.CurrentPeriod == 0 || ViewBag.CurrentPeriod == null)">Все время</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="card-body row g-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Статус</label>
+                <select name="statusId" class="form-select" asp-items="ViewBag.Statuses">
+                    <option value="0">Все статусы</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Приоритет</label>
+                <select name="priority" class="form-select">
+                    <option value="0">Все приоритеты</option>
+                    <option value="1">Критический</option>
+                    <option value="2">Высокий</option>
+                    <option value="3">Средний</option>
+                    <option value="4">Низкий</option>
+                    <option value="5">Минимальный</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Исполнитель</label>
+                <select name="executorId" class="form-select" asp-items="ViewBag.Executors">
+                    <option value="0">Все исполнители</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Поиск</label>
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Поиск...">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>
+
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h5>Всего заявок</h5>
+                <h3>@Model.Count()</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h5>В работе</h5>
+                <h3>@Model.Count(r => r.RequestStatus?.Name != "Completed" && r.RequestStatus?.Name != "Завершена")</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h5>Завершено</h5>
+                <h3>@Model.Count(r => r.RequestStatus?.Name == "Completed" || r.RequestStatus?.Name == "Завершена")</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <h5>Критический приоритет</h5>
+                <h3>@Model.Count(r => r.Priority == 1)</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm" style="width: 120%; margin: 0 auto;">
+    <div class="card-body p-0 ">
+        <div>
+            <table class="table table-hover m-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">RequestID</th>
+                        <th scope="col">CreationDate</th>
+                        <th scope="col">Author</th>
+                        <th scope="col">RequestStatus</th>
+                        <th scope="col">RequestType</th>
+                        <th scope="col">ProblemDescription</th>
+                        <th scope="col">Priority</th>
+                        <th scope="col">Equipment</th>
+                        <th scope="col">Executor</th>
+                        <th scope="col">Deadline</th>
+                        <th scope="col">CompletionDate</th>
+                        <th scope="col">History</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.RequestID</td>
+                            <td>@item.CreationDate</td>
+                            <td>
+                                @if (item.Author != null)
+                                {
+                                    <button type="button" class="btn btn-link p-0 border-0 bg-transparent"
+                                            data-bs-toggle="modal" data-bs-target="#authorModal-@item.RequestID">
+                                        @item.Author.FullName
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span>N/A</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(item.RequestStatus?.Name)">
+                                    @(item.RequestStatus?.Name ?? "N/A")
+                                </span>
+                            </td>
+                            <td>@(item.RequestType?.Name ?? "N/A")</td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 200px;"
+                                     title="@item.ProblemDescription">
+                                    @item.ProblemDescription
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge @GetPriorityBadgeClass(item.Priority)">
+                                    @GetPriorityText(item.Priority)
+                                </span>
+                            </td>
+                            <td>
+                                @if (item.Equipment != null)
+                                {
+                                    <button type="button" class="btn btn-link p-0 border-0 bg-transparent"
+                                            data-bs-toggle="modal" data-bs-target="#equipmentModal-@item.RequestID">
+                                        @item.Equipment.Name
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span>N/A</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Executor != null)
+                                {
+                                    <button type="button" class="btn btn-link p-0 border-0 bg-transparent"
+                                            data-bs-toggle="modal" data-bs-target="#executorModal-@item.RequestID">
+                                        @item.Executor.FullName
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span>N/A</span>
+                                }
+                            </td>
+                            <td>@(item.Deadline?.ToString() ?? "N/A")</td>
+                            <td>@(item.CompletionDate?.ToString() ?? "N/A")</td>
+                            <td>
+                                @if (item.History?.Any() == true)
+                                {
+                                    <button type="button"
+                                            class="btn btn-link p-0 border-0 bg-transparent text-decoration-none"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#historyModal-@item.RequestID"
+                                            title="Показать историю изменений">
+                                        @item.History.Count @(item.History.Count == 1 ? "item" : "items")
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">0 item</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+@foreach (var item in Model)
+{
+    @if (item.Author != null)
+    {
+        <div class="modal fade" id="authorModal-@item.RequestID" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Автор: @item.Author.FullName</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Должность:</strong> @item.Author.positionDTO.Title</p>
+                        <p><strong>Отдел:</strong> @item.Author.departmentDTO.Name</p>
+                        <p><strong>Email:</strong> @item.Author.Email</p>
+                        <p><strong>Телефон:</strong> @item.Author.Phone</p>
+                        <p><strong>Специальность:</strong> @item.Author.UserType</p>
+                        <p><strong>Дата регистрации:</strong> @item.Author.RegistrationDate</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (item.Equipment != null)
+    {
+        <div class="modal fade" id="equipmentModal-@item.RequestID" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Оборудование: @item.Equipment.Name</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Тип:</strong> @item.Equipment.Type</p>
+                        <p><strong>Наименование:</strong> @item.Equipment.Name</p>
+                        <p><strong>Серийный номер:</strong> @item.Equipment.SerialNumber</p>
+                        <p><strong>Производитель:</strong> @item.Equipment.Manufacturer</p>
+                        <p><strong>Модель:</strong> @item.Equipment.Model</p>
+                        <p><strong>Место нахождения:</strong> @item.Equipment.Location</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (item.Executor != null)
+    {
+        <div class="modal fade" id="executorModal-@item.RequestID" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Исполнитель: @item.Executor.FullName</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Должность:</strong> @item.Executor.positionDTO.Title</p>
+                        <p><strong>Отдел:</strong> @item.Executor.departmentDTO.Name</p>
+                        <p><strong>Email:</strong> @item.Executor.Email</p>
+                        <p><strong>Телефон:</strong> @item.Executor.Phone</p>
+                        <p><strong>Специальность:</strong> @item.Executor.UserType</p>
+                        <p><strong>Дата регистрации:</strong> @item.Executor.RegistrationDate</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (item.History?.Any() == true)
+    {
+        <div class="modal fade" id="historyModal-@item.RequestID" tabindex="-1" aria-labelledby="historyModalLabel-@item.RequestID" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title" id="historyModalLabel-@item.RequestID">
+                            История изменений заявки #@item.RequestID
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="w-20">Дата</th>
+                                        <th class="w-15">Статус</th>
+                                        <th class="w-20">Пользователь</th>
+                                        <th>Комментарий</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var historyItem in item.History.OrderByDescending(h => h.ChangeDate))
+                                    {
+                                        <tr>
+                                            <td>@historyItem.ChangeDate.ToString("g")</td>
+                                            <td>
+                                                <span class="badge bg-secondary">
+                                                    @historyItem.Status?.Name
+                                                </span>
+                                            </td>
+                                            <td>@historyItem.ChangedBy?.FullName</td>
+                                            <td class="text-break">@historyItem.Comment</td>
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg"></i> Закрыть
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<style>
+    .btn-link {
+        text-decoration: none;
+        color: #0d6efd;
+    }
+
+        .btn-link:hover {
+            text-decoration: underline;
+            color: #0a58ca;
+        }
+</style>
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Новая" => "bg-secondary",
+            "В работе" => "bg-warning",
+            "Завершено" => "bg-success",
+            "Отменено" => "bg-danger",
+            _ => "bg-info"
+        };
+    }
+
+    private string GetPriorityBadgeClass(int priority)
+    {
+        return priority switch
+        {
+            1 => "bg-danger",
+            2 => "bg-warning",
+            3 => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetPriorityText(int priority)
+    {
+        return priority switch
+        {
+            1 => "Критический",
+            2 => "Высокий",
+            3 => "Средний",
+            4 => "Низкий",
+            5 => "Минимальный",
+            _ => "Не указан"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        var config = {
+             type: 'bar',
+             data:@Html.Raw(Json.Serialize(TempData["dataToGrath"])),
+             options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Динамика заявок по месяцам'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Количество заявок'
+                            },
+                            ticks: {
+                                stepSize: 1
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Месяцы'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'nearest'
+                    }
+                }
+        };
+
+        window.onload = function() {
+          var ctx = document.getElementById("chart").getContext("2d");
+          window.line = new Chart(ctx, config);
+        };
+    </script>
+}
