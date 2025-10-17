@@ -88,6 +88,7 @@ void AddServices(WebApplicationBuilder builder)
     builder.Logging.SetMinimumLevel(LogLevel.Trace);
     builder.Host.UseNLog();
     builder.Services.AddRazorPages();
+    builder.Services.AddScoped<EmailSender>();
     builder.Services.AddScoped<DepartmentService>();
     builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
     builder.Services.AddScoped<RoleService>();

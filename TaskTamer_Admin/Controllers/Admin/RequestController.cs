@@ -18,6 +18,8 @@ public class RequestController : Controller
     private readonly RequestTypeService _typeService;
     private readonly EquipmentService _equipmentService;
     private readonly UserService _userService;
+    private readonly EmailSender _emailSender;
+
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     public RequestController(
@@ -26,7 +28,8 @@ public class RequestController : Controller
         RequestStatusService statusService,
         RequestTypeService typeService,
         EquipmentService equipmentService,
-        UserService userService
+        UserService userService,
+        EmailSender emailSender
     )
     {
         _requestService = requestService;
@@ -35,6 +38,7 @@ public class RequestController : Controller
         _typeService = typeService;
         _equipmentService = equipmentService;
         _userService = userService;
+        _emailSender = emailSender;
     }
 
 
@@ -232,11 +236,14 @@ public class RequestController : Controller
 
 
             var updateResult = await _requestService.UpdateRequestAsync(requestDto, us.Data.UserID);
-
+           
             if (updateResult.IsSuccess)
             {
                 TempData["messageType"] = "success";
                 TempData["SuccessMessage"] = "Заявка успешно обновлена";
+                await _emailSender.SendNotificationAsync(requestDto.Executor.Email, $"Обновились данные заявки - {requestDto.RequestID}");
+                await _emailSender.SendNotificationAsync(requestDto.Author.Email, $"Обновились данные заявки - {requestDto.RequestID}");
+
                 return RedirectToAction(nameof(Index));
             }
             else

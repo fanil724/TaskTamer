@@ -16,18 +16,20 @@ public class UserController : Controller
     private readonly DepartmentService _departmentService;
     private readonly EmployeeService _employeeService;
     private readonly PositionService _positionService;
+    private readonly EmailSender _emailSender;
 
 
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     public UserController(UserService userService, RoleService roleService, DepartmentService departmentService,
-        EmployeeService employeeService, PositionService positionService)
+        EmployeeService employeeService, PositionService positionService, EmailSender emailSender)
     {
         _departmentService = departmentService;
         _roleService = roleService;
         _employeeService = employeeService;
         _userService = userService;
         _positionService = positionService;
+        _emailSender = emailSender;
     }
 
     [Authorize(Roles = "Admin")]
@@ -97,8 +99,9 @@ public class UserController : Controller
                 return View("~/Views/Admin/User/Edit.cshtml", model);
             }
 
-
+            await _emailSender.SendEmailAsync(model.employeeDTO.Email,"Обновиление","Изменились данные пользователя");
             var res = new RespMessage("success", result.Message);
+
             return RedirectToAction(nameof(Index), res);
         }
         catch (Exception ex)
@@ -142,6 +145,7 @@ public class UserController : Controller
 
 
             var res = new RespMessage("success", result.Message);
+            await _emailSender.SendEmailAsync(model.employeeDTO.Email, "Создание аккаунта", $"Логин: {model.Username}, Пароль: {model.PasswordHash}");
             return RedirectToAction(nameof(Index), res);
         }
         catch (Exception ex)

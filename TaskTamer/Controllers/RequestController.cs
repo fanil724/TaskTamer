@@ -16,12 +16,15 @@ public class RequestController : ControllerBase
     private readonly RequestService _requestService;
     private readonly UserService _userService;
     private readonly IServerSentEventsService _sseService;
+    private readonly EmailSender _emailSender;
 
-    public RequestController(RequestService requestService, UserService userService, IServerSentEventsService serverSent)
+
+    public RequestController(RequestService requestService, UserService userService, IServerSentEventsService serverSent, EmailSender emailSender)
     {
         _requestService = requestService;
         _userService = userService;
         _sseService = serverSent;
+        _emailSender = emailSender;
     }
 
     [HttpPost]
@@ -38,6 +41,8 @@ public class RequestController : ControllerBase
                 EventType = "notification",
                 userName = User.Identity?.Name ?? ""
             };
+
+            await _emailSender.SendNotificationAsync(request.Executor.Email, $"Созданна заявка - {request.RequestID}");
             var clients = _sseService.GetClients();
 
             foreach (var client in clients.Where(x => x.User.Identity.Name != User.Identity.Name))
@@ -67,6 +72,9 @@ public class RequestController : ControllerBase
                 EventType = "notification",
                 userName = User.Identity?.Name ?? ""
             };
+            await _emailSender.SendNotificationAsync(request.Executor.Email, $"Обновились данные заявки - {request.RequestID}");
+
+
             var clients = _sseService.GetClients();
 
             foreach (var client in clients.Where(x => x.User.Identity.Name != User.Identity.Name))

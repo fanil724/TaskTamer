@@ -87,7 +87,7 @@ msbuild.wrn
 Thumbs.db
 
 ## Local development files
-appsettings.Development.json
+##appsettings.Development.json
 appsettings.local.json
 
 ## Entity Framework

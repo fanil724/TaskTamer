@@ -413,8 +413,7 @@ public class EquipmentController : Controller
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Ошибка при заполнении ViewBag");
-            // Устанавливаем пустые списки в случае ошибки
+            _logger.Error(ex, "Ошибка при заполнении ViewBag");            
             ViewBag.ResponsibleEmployees = new SelectList(new List<EmployeeDTO>(), "EmployeeID", "FullName");
             ViewBag.departments = new SelectList(new List<DepartmentDTO>(), "DepartmentID", "Name");
 
