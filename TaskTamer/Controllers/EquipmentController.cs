@@ -40,7 +40,7 @@ namespace TaskTamer_API.Controllers
             }
             var filepath = _configuration.GetValue<string>("FilePath");
             var filename = result.Data?.TechnicalDocumentation;
-            string fullPath = Path.Combine(filepath, filename);
+            string fullPath = Path.Combine(Directory.GetCurrentDirectory(),filepath, filename);
 
             if (string.IsNullOrEmpty(fullPath))
             {
@@ -49,7 +49,7 @@ namespace TaskTamer_API.Controllers
 
             var contentType = GetContentType(filename);
 
-            return PhysicalFile(fullPath, contentType);
+            return PhysicalFile(fullPath, contentType,filename);
         }
 
         private string GetContentType(string filename)

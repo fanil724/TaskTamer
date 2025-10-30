@@ -423,6 +423,10 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
             } catch (error) {
+                if (error instanceof Error) {
+                    console.error('Ошибка при скачивании файла:', error.message);
+                }
+
                 console.error('Ошибка при скачивании файла:', error);
                 alert('Не удалось скачать инструкцию');
             }
