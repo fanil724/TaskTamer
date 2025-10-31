@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { IRequest, IRequestType, IEquipment, IEmployee, IRequestStatus, IHistory } from "../models/IRequest";
 import RequestService from "../services/RequestService";
 import { Context } from "../index";
@@ -16,15 +16,15 @@ interface EditRequestModalProps {
 }
 
 const EditRequestModal: React.FC<EditRequestModalProps> = ({
-    isOpen,
-    onClose,
-    onUpdate,
-    request,
-    requestTypes,
-    equipmentList,
-    employees,
-    isLoading
-}) => {
+                                                               isOpen,
+                                                               onClose,
+                                                               onUpdate,
+                                                               request,
+                                                               requestTypes,
+                                                               equipmentList,
+                                                               employees,
+                                                               isLoading
+                                                           }) => {
     const { store } = useContext(Context);
     const [formData, setFormData] = useState<IRequest>({
         requestID: 0,
@@ -108,7 +108,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
             email: '',
             userType: 'Employee',
             registrationDate: '',
-                terminationDate: null,
+            terminationDate: null,
             isActive: true
         },
         history: []
@@ -118,15 +118,29 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
     const [statusOptions, setStatusOptions] = useState<IRequestStatus[]>([]);
     const [isLoadingStatuses, setIsLoadingStatuses] = useState(false);
     const [activeTab, setActiveTab] = useState<'edit' | 'history'>('edit');
-    const [newDescription, setNewDescription] = useState("");    
-   
+    const [newDescription, setNewDescription] = useState("");
+
     const [showStatusConfirmation, setShowStatusConfirmation] = useState(false);
     const [nextStatus, setNextStatus] = useState<IRequestStatus | null>(null);
-    const [statusComment, setStatusComment] = useState("");
+    const [pendingStatusChange, setPendingStatusChange] = useState<IRequestStatus | null>(null);
+
+
+    const [originalData, setOriginalData] = useState<IRequest | null>(null);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setPendingStatusChange(null);
+            setShowStatusConfirmation(false);
+            setNextStatus(null);
+            setOriginalData(null);
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (request) {
             setFormData(request);
+            setOriginalData(request);
+            setPendingStatusChange(null);
         }
     }, [request]);
 
@@ -150,13 +164,12 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
         }
     };
 
-    
     const getAvailableExecutors = (): IEmployee[] => {
         if (!formData.equipment?.departmentDTO?.departmentID) {
             return [];
         }
-        
-        return employees.filter(employee => 
+
+        return employees.filter(employee =>
             employee.departmentDTO?.departmentID === formData.equipment.departmentDTO.departmentID &&
             employee.isActive
         );
@@ -173,12 +186,40 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
     const canEditRequest = isAuthor || isExecutor || isDepartmentManager || isAdmin;
     const canEditDeadline = canAssignExecutor && formData.requestStatus.name === 'Создана';
 
-    
-    const getNextStatus = (): IRequestStatus | null => {
-        const currentStatus = formData.requestStatus.name;
-        
+
+    const hasChanges = useCallback((): boolean => {
+        if (!originalData) return false;
+
+        if (pendingStatusChange) {
+            return true;
+        }
+
+        const currentExecutorId = formData.executor?.employeeID || 0;
+        const originalExecutorId = originalData.executor?.employeeID || 0;
+        if (currentExecutorId !== originalExecutorId) {
+            return true;
+        }
+
+        const currentDeadline = formData.deadline ? new Date(formData.deadline).getTime() : null;
+        const originalDeadline = originalData.deadline ? new Date(originalData.deadline).getTime() : null;
+        if (currentDeadline !== originalDeadline) {
+            return true;
+        }
+
+        if (formData.problemDescription !== originalData.problemDescription) {
+            return true;
+        }
+
+        return false;
+    }, [formData, originalData, pendingStatusChange]);
+
+    const hasUnsavedChanges = useMemo(() => hasChanges(), [hasChanges]);
+
+    const getNextStatus = useCallback((): IRequestStatus | null => {
+        const currentStatus = pendingStatusChange?.name || formData.requestStatus.name;
+
         if (!canEditRequest) return null;
-       
+
         if (isAuthor) {
             if (currentStatus === 'Ожидает проверки') {
                 return statusOptions.find(s => s.name === 'Завершена') || null;
@@ -190,7 +231,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                 return statusOptions.find(s => s.name === 'Отменена') || null;
             }
         }
-        
+
         if (isExecutor) {
             if (currentStatus === 'Назначена') {
                 return statusOptions.find(s => s.name === 'В работе') || null;
@@ -199,7 +240,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                 return statusOptions.find(s => s.name === 'Ожидает проверки') || null;
             }
         }
-        
+
         if (isDepartmentManager || isAdmin) {
             if (currentStatus === 'Создана') {
                 return statusOptions.find(s => s.name === 'Назначена') || null;
@@ -213,14 +254,14 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
         }
 
         return null;
-    };
+    }, [formData.requestStatus.name, pendingStatusChange, canEditRequest, isAuthor, isExecutor, isDepartmentManager, isAdmin, statusOptions]);
 
-    const nextAvailableStatus = getNextStatus();
-    
-    const getNextStepButtonText = (): string => {
+    const nextAvailableStatus = useMemo(() => getNextStatus(), [getNextStatus]);
+
+    const getNextStepButtonText = useCallback((): string => {
         if (!nextAvailableStatus) return "Нет доступных действий";
-        
-        const currentStatus = formData.requestStatus.name;
+
+        const currentStatus = pendingStatusChange?.name || formData.requestStatus.name;
         const nextStatusName = nextAvailableStatus.name;
 
         const statusActions: { [key: string]: { [key: string]: string } } = {
@@ -251,47 +292,26 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
         }
 
         return `Перевести в "${nextStatusName}"`;
-    };
+    }, [nextAvailableStatus, formData.requestStatus.name, pendingStatusChange, isAuthor, isExecutor, isDepartmentManager, isAdmin]);
 
-    
     const handleNextStepClick = () => {
         if (!nextAvailableStatus) return;
-        
+
         setNextStatus(nextAvailableStatus);
-        setStatusComment("");
         setShowStatusConfirmation(true);
     };
 
-    
     const handleStatusConfirm = () => {
         if (!nextStatus) return;
 
-        const updatedData = {
-            ...formData,
-            requestStatus: nextStatus
-        };
-
-        
-        if (nextStatus.name === 'Завершена') {
-            updatedData.completionDate = new Date().toISOString();
-        }
-
-        
-        if (nextStatus.name === 'Назначена' && formData.executor) {
-            
-            console.log('Заявка назначена исполнителю:', formData.executor.fullName);
-        }
-
-        setFormData(updatedData);
+        setPendingStatusChange(nextStatus);
         setShowStatusConfirmation(false);
         setNextStatus(null);
-        setStatusComment("");
     };
-    
+
     const handleStatusCancel = () => {
         setShowStatusConfirmation(false);
         setNextStatus(null);
-        setStatusComment("");
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -402,7 +422,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: value ? new Date(value) : null
+            [name]: value ? new Date(value).toISOString() : null
         }));
     };
 
@@ -448,37 +468,70 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
         if (!formData.priority || formData.priority < 1 || formData.priority > 5) {
             newErrors['priority'] = 'Приоритет обязателен';
         }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateForm()) return;
-        
-        const updatedData = { ...formData };
-        if (statusComment.trim()) {
-            
-            console.log('Комментарий к изменению статуса:', statusComment);
+
+        let updatedData = { ...formData };
+
+        if (pendingStatusChange) {
+            updatedData = {
+                ...updatedData,
+                requestStatus: pendingStatusChange
+            };
+
+            if (pendingStatusChange.name === 'Завершена') {
+                updatedData.completionDate = new Date().toISOString();
+            }
+
+            if (pendingStatusChange.name === 'Назначена' && formData.executor) {
+                console.log('Заявка назначена исполнителю:', formData.executor.fullName);
+            }
         }
-        
-        onUpdate(updatedData);
+
+        try {
+            await onUpdate(updatedData);
+            setPendingStatusChange(null);
+            // Обновляем оригинальные данные после успешного сохранения
+            setOriginalData(updatedData);
+        } catch (error) {
+            console.error('Ошибка при сохранении заявки:', error);
+        }
     };
 
     const handleAddNewDescription = () => {
         if (!newDescription.trim()) return;
-        
-        const updatedDescription = formData.problemDescription 
+
+        const updatedDescription = formData.problemDescription
             ? `${formData.problemDescription}, ${newDescription}`
             : newDescription;
-            
+
         setFormData(prev => ({
             ...prev,
             problemDescription: updatedDescription
         }));
         setNewDescription("");
     };
+
+    const handleCancel = () => {
+        if (hasUnsavedChanges) {
+            const confirmClose = window.confirm(
+                'У вас есть несохраненные изменения. Вы уверены, что хотите закрыть без сохранения?'
+            );
+            if (!confirmClose) {
+                return;
+            }
+        }
+
+        setPendingStatusChange(null);
+        onClose();
+    };
+
+    const displayStatus = pendingStatusChange || formData.requestStatus;
 
     if (!isOpen || !request) return null;
 
@@ -487,8 +540,14 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
             <div className="erm-modal-content">
                 <div className="erm-modal-header">
                     <h2>Заявка #{request.requestID}</h2>
-                    <button className="erm-modal-close" onClick={onClose}>×</button>
+                    <button className="erm-modal-close" onClick={handleCancel}>×</button>
                 </div>
+
+                {hasUnsavedChanges && (
+                    <div className="erm-unsaved-changes-warning">
+                        ⚠ Есть несохраненные изменения. Нажмите "Сохранить изменения" для применения.
+                    </div>
+                )}
 
                 <div className="erm-tabs">
                     <button
@@ -572,18 +631,21 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                             <div className="erm-form-group">
                                 <label>Текущий статус</label>
                                 <div className="erm-current-status">
-                                    <span className={`erm-status-badge erm-status-${formData.requestStatus.name.toLowerCase().replace(' ', '-')}`}>
-                                        {formData.requestStatus.name}
+                                    <span className={`erm-status-badge erm-status-${displayStatus.name.toLowerCase().replace(' ', '-')}`}>
+                                        {displayStatus.name}
+                                        {pendingStatusChange && (
+                                            <span className="erm-pending-indicator"> (ожидает сохранения)</span>
+                                        )}
                                     </span>
                                 </div>
-                                
+
                                 {nextAvailableStatus && (
                                     <div className="erm-next-step">
                                         <button
                                             type="button"
                                             className="erm-next-step-btn"
                                             onClick={handleNextStepClick}
-                                            disabled={isLoading || isLoadingStatuses}
+                                            disabled={isLoading || isLoadingStatuses || pendingStatusChange !== null}
                                         >
                                             {getNextStepButtonText()}
                                         </button>
@@ -592,13 +654,21 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                                         </span>
                                     </div>
                                 )}
-                                
+
                                 {!nextAvailableStatus && canEditRequest && (
                                     <span className="erm-info-text">Нет доступных действий для этого статуса</span>
                                 )}
-                                
+
                                 {!canEditRequest && (
                                     <span className="erm-info-text">У вас нет прав для изменения статуса</span>
+                                )}
+
+                                {pendingStatusChange && (
+                                    <div className="erm-pending-change">
+                                        <span className="erm-warning-text">
+                                            ⚠ Статус будет изменен на "{pendingStatusChange.name}" после сохранения
+                                        </span>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -647,7 +717,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                                 />
                                 {!canEditDeadline && (
                                     <span className="erm-info-text">
-                                        {formData.requestStatus.name === 'Создана' 
+                                        {formData.requestStatus.name === 'Создана'
                                             ? 'Изменять дедлайн может только руководитель отдела при статусе "Создана"'
                                             : 'Изменение дедлайна доступно только при статусе "Создана"'
                                         }
@@ -716,7 +786,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                             <ul>
                                 {isAuthor && <li>✓ Вы автор заявки - можете завершать, переоткрывать и отменять</li>}
                                 {isExecutor && <li>✓ Вы исполнитель - можете принимать в работу и отправлять на проверку</li>}
-                                {isDepartmentManager && <li>✓ Вы руководитель отдела - можете назначать исполнителей и изменять дедлайн (только при статусе "Создана")</li>}                               
+                                {isDepartmentManager && <li>✓ Вы руководитель отдела - можете назначать исполнителей и изменять дедлайн (только при статусе "Создана")</li>}
                             </ul>
                         </div>
 
@@ -724,7 +794,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                             <button
                                 type="button"
                                 className="erm-btn erm-btn-secondary"
-                                onClick={onClose}
+                                onClick={handleCancel}
                                 disabled={isLoading}
                             >
                                 Отмена
@@ -732,7 +802,7 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                             <button
                                 type="submit"
                                 className="erm-btn erm-btn-primary"
-                                disabled={isLoading || isLoadingStatuses || !canEditRequest}
+                                disabled={isLoading || isLoadingStatuses || !canEditRequest || !hasUnsavedChanges}
                             >
                                 {isLoading ? 'Сохранение...' : 'Сохранить изменения'}
                             </button>
@@ -786,20 +856,9 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
                                     Вы уверены, что хотите <strong>{getNextStepButtonText().toLowerCase()}</strong>?
                                 </p>
                                 <p>
-                                    Статус заявки изменится с "<strong>{formData.requestStatus.name}</strong>" на 
+                                    Статус заявки изменится с "<strong>{displayStatus.name}</strong>" на
                                     "<strong>{nextStatus.name}</strong>"
                                 </p>
-                                
-                                <div className="erm-form-group">
-                                    <label htmlFor="erm-status-comment">Комментарий (необязательно):</label>
-                                    <textarea
-                                        id="erm-status-comment"
-                                        value={statusComment}
-                                        onChange={(e) => setStatusComment(e.target.value)}
-                                        placeholder="Добавьте комментарий к изменению статуса..."
-                                        rows={3}
-                                    />
-                                </div>
                             </div>
                             <div className="erm-confirmation-actions">
                                 <button
@@ -825,4 +884,4 @@ const EditRequestModal: React.FC<EditRequestModalProps> = ({
     );
 };
 
-export default EditRequestModal;
+export default React.memo(EditRequestModal);

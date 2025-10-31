@@ -12,9 +12,8 @@ interface CreateRequestModalProps {
     isLoading?: boolean;
 }
 
-// Интерфейс для конфигурации приоритетов по типам заявок
 interface RequestTypePriorityConfig {
-    [key: string]: number; // название типа заявки -> приоритет
+    [key: string]: number;
 }
 
 const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
@@ -44,7 +43,7 @@ const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
     const [errors, setErrors] = useState<Partial<{ [K in keyof IRequest]?: string }>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Конфигурация автоматического выбора приоритета на основе типа заявки
+
     const requestTypePriorityConfig: RequestTypePriorityConfig = {
         'Срочный ремонт': 1,
         'Ремонт': 2,
@@ -58,7 +57,6 @@ const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
         'Гарантийное обслуживание': 3
     };
 
-    // Функция для получения приоритета по типу заявки
     const getPriorityByRequestType = (requestTypeName: string): number => {
         return requestTypePriorityConfig[requestTypeName] || 3; // по умолчанию средний приоритет
     };
@@ -190,7 +188,6 @@ const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
         const selectedEquipment = equipmentList.find(equip => equip.equipmentID === equipmentID);
 
         if (selectedEquipment) {
-            // Находим ответственного за выбранное оборудование
             const responsibleEmployee = findEquipmentResponsible(selectedEquipment);
 
             setFormData(prev => ({
@@ -233,7 +230,6 @@ const CreateRequestModal: React.FC<CreateRequestModalProps> = ({
         }));
     };
 
-    // Функция для получения названия приоритета
     const getPriorityName = (priority: number): string => {
         const priorityNames: { [key: number]: string } = {
             1: 'Критический',

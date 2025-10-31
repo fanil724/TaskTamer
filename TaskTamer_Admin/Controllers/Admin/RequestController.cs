@@ -191,8 +191,8 @@ public class RequestController : Controller
             if (string.IsNullOrEmpty(requestDto.ProblemDescription))
                 ModelState.AddModelError("ProblemDescription", "Описание проблемы обязательно");
 
-            if (requestDto.Priority < 1 || requestDto.Priority > 3)
-                ModelState.AddModelError("Priority", "Приоритет должен быть от 1 до 3");
+            if (requestDto.Priority < 1 || requestDto.Priority > 5)
+                ModelState.AddModelError("Priority", "Приоритет должен быть от 1 до 5");
 
             if (requestDto.RequestStatus?.StatusID == 0)
                 ModelState.AddModelError("RequestStatus.StatusID", "Статус обязателен");
